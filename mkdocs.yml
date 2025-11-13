@@ -1,0 +1,242 @@
+# MkDocs Konfiguration für C++ Projekt Dokumentation
+# =======================================================
+# Um zwischen Themes zu wechseln, kommentiere einfach die gewünschte Theme-Sektion aus
+
+site_name: C++ Advanced Library Documentation
+site_description: Umfassende Dokumentation für eine moderne C++ Bibliothek
+site_author: Your Name
+site_url: https://example.com
+
+# Repository
+repo_name: youruser/cpp-library
+repo_url: https://github.com/youruser/cpp-library
+edit_uri: edit/main/docs/
+
+# Copyright
+copyright: Copyright &copy; 2025 Your Company
+
+# ============================================
+# THEME OPTIONEN - Wähle eines der folgenden:
+# ============================================
+
+# OPTION 1: Material Theme (Modern & Feature-reich) - AKTIV
+theme:
+  name: material
+  language: de
+  palette:
+    # Palette toggle for light mode
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.indexes
+    - navigation.top
+    - toc.follow
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+    - search.share
+    - header.autohide
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+  icon:
+    repo: fontawesome/brands/github
+    logo: material/library
+
+# OPTION 2: ReadTheDocs Theme (Klassisch) - INAKTIV
+# Zum Aktivieren: Kommentiere Material Theme aus und aktiviere dieses
+# theme:
+#   name: readthedocs
+#   highlightjs: true
+#   hljs_languages:
+#     - cpp
+#     - cmake
+#     - python
+
+# OPTION 3: MkDocs Default Theme - INAKTIV
+# theme:
+#   name: mkdocs
+#   highlightjs: true
+#   hljs_languages:
+#     - cpp
+#   navigation_depth: 3
+#   nav_style: primary
+
+# OPTION 4: Bootswatch Themes - INAKTIV
+# theme:
+#   name: cerulean  # Optionen: cerulean, cosmo, cyborg, darkly, flatly, journal, litera, lumen, lux, materia, minty, pulse, sandstone, simplex, slate, solar, spacelab, superhero, united, yeti
+#   highlightjs: true
+
+# Plugins
+plugins:
+  - search:
+      lang: de
+      separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
+  - tags
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: datetime
+
+# Extensions
+markdown_extensions:
+  # Python Markdown
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 4
+
+  # Python Markdown Extensions
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Extra CSS und JavaScript
+extra_css:
+  - assets/extra.css
+
+extra_javascript:
+  - assets/extra.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+# Extra Konfiguration
+extra:
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/youruser
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/youruser
+    - icon: fontawesome/brands/linkedin
+      link: https://linkedin.com/in/youruser
+  generator: false
+  tags:
+    C++: cpp
+    Tutorial: tutorial
+    API: api
+    Advanced: advanced
+
+# Navigation Structure
+nav:
+  - Home: index.md
+
+  - Getting Started:
+    - getting-started/index.md
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+    - Build System: getting-started/build-system.md
+    - Dependencies: getting-started/dependencies.md
+
+  - Tutorials:
+    - tutorials/index.md
+    - Beginner:
+      - Hello World: tutorials/beginner-hello-world.md
+      - Basic Concepts: tutorials/beginner-concepts.md
+      - First Application: tutorials/beginner-first-app.md
+    - Intermediate:
+      - Memory Management: tutorials/intermediate-memory.md
+      - Templates: tutorials/intermediate-templates.md
+      - STL Integration: tutorials/intermediate-stl.md
+    - Advanced:
+      - Metaprogramming: tutorials/advanced-metaprogramming.md
+      - Concurrency: tutorials/advanced-concurrency.md
+      - Performance Optimization: tutorials/advanced-performance.md
+
+  - API Reference:
+    - api-reference/index.md
+    - Core:
+      - Classes: api-reference/core-classes.md
+      - Functions: api-reference/core-functions.md
+      - Types: api-reference/core-types.md
+    - Utilities:
+      - String Utilities: api-reference/utils-string.md
+      - Math Utilities: api-reference/utils-math.md
+      - IO Utilities: api-reference/utils-io.md
+    - Containers:
+      - Custom Containers: api-reference/containers.md
+      - Iterators: api-reference/iterators.md
+    - Algorithms:
+      - Sorting: api-reference/algo-sorting.md
+      - Search: api-reference/algo-search.md
+      - Transform: api-reference/algo-transform.md
+
+  - Architecture:
+    - architecture/index.md
+    - Design Principles: architecture/design-principles.md
+    - Component Overview: architecture/components.md
+    - Data Flow: architecture/data-flow.md
+    - Threading Model: architecture/threading.md
+    - Error Handling: architecture/error-handling.md
+
+  - Examples:
+    - examples/index.md
+    - Basic Examples: examples/basic-examples.md
+    - Advanced Examples: examples/advanced-examples.md
+    - Design Patterns: examples/design-patterns.md
+    - Real-World Use Cases: examples/use-cases.md
+
+  - Development:
+    - development/index.md
+    - Contributing: development/contributing.md
+    - Code Style: development/code-style.md
+    - Testing: development/testing.md
+    - Debugging: development/debugging.md
+    - CI/CD: development/cicd.md
+
+  - About:
+    - License: about/license.md
+    - Changelog: about/changelog.md
+    - FAQ: about/faq.md
