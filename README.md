@@ -22,10 +22,12 @@ Diese Dokumentation demonstriert Best Practices für die Dokumentation von C++-P
 - 📖 Umfangreiche Code-Beispiele
 - 📊 Mermaid Diagramme
 - 🏷️ Tags und Kategorien
+- 🔨 Build Control Hook - Pausiere HTML-Builds vom Browser aus
+- ✏️ Live Edit - Bearbeite Seiten direkt im Browser
 
 ## Voraussetzungen
 
-- Python 3.8+
+- Python 3.10+ (erforderlich für Live Edit Plugin)
 - pip
 
 ## Installation
@@ -43,13 +45,37 @@ cd mkdocs
 pip install -r requirements.txt
 ```
 
-### 3. MkDocs starten
+### 3. Server starten
 
+**Option A: Automatischer Start (empfohlen)**
+
+Beide Server (Build Control + MkDocs) mit einem Befehl starten:
+
+**Windows:**
 ```bash
-mkdocs serve
+start.bat
 ```
 
-Die Dokumentation ist dann verfügbar unter: http://127.0.0.1:8000
+**Linux/macOS:**
+```bash
+./start.sh
+```
+
+Die Startskripte starten automatisch:
+- Build Control Server (Port 8001)
+- MkDocs Server mit Live Edit (Port 8005)
+
+**Option B: Manueller Start**
+
+Für **Live Edit Funktionalität** (erforderlich für Browser-Bearbeitung):
+
+```bash
+mkdocs serve -a 0.0.0.0:8005
+```
+
+Die Dokumentation ist dann verfügbar unter: http://127.0.0.1:8005
+
+**Hinweis**: Das `-a 0.0.0.0:8005` Flag ist notwendig, damit das Live Edit Plugin korrekt funktioniert.
 
 ## Projekt-Struktur
 
@@ -241,6 +267,145 @@ graph TD
 ```
 ```
 
+## Live Edit Plugin
+
+Das **mkdocs-live-edit-plugin** ermöglicht es, Markdown-Seiten direkt im Browser zu bearbeiten - kein Editor erforderlich!
+
+### Features
+
+- ✏️ **Bearbeiten**: Editiere Markdown direkt im Browser
+- 📄 **Erstellen**: Neue Seiten mit einem Klick anlegen
+- ✂️ **Löschen**: Seiten direkt aus dem Browser entfernen
+- 🔄 **Umbenennen**: Seiten und Dateien umbenennen
+- 💾 **Auto-Save**: Änderungen werden sofort gespeichert
+- 🔥 **Live-Reload**: MkDocs lädt die Seite automatisch neu
+
+### Verwendung
+
+**Mit Start-Skripten (empfohlen):**
+- Live Edit ist automatisch aktiviert nach `start.bat` / `./start.sh`
+
+**Manuell:**
+
+1. **MkDocs mit korrektem Host starten**:
+
+```bash
+mkdocs serve -a 0.0.0.0:8005
+```
+
+2. **Im Browser**: Navigiere zu einer Seite
+3. **Edit-Button**: Klicke auf den Edit-Button (erscheint automatisch)
+4. **Bearbeiten**: Editiere den Markdown-Inhalt
+5. **Speichern**: Drücke `Ctrl+S` (Windows/Linux) oder `Cmd+S` (Mac)
+
+### Tastenkombinationen
+
+- `Ctrl/Cmd + S` - Änderungen speichern
+- `Ctrl/Cmd + B` - Text fett formatieren
+- `Ctrl/Cmd + I` - Text kursiv formatieren
+- `Alt/Opt + S` - Text durchstreichen
+
+### Konfiguration
+
+In `mkdocs.yml`:
+
+```yaml
+plugins:
+  - live-edit:
+      websockets_port: 9001  # WebSocket Port (default: 9001)
+      debug_mode: false      # Debug-Modus für Browser-Console
+```
+
+### Wichtige Hinweise
+
+- **WebSocket-Server**: Läuft auf Port 9001 (konfigurierbar)
+- **Bind-Adresse**: MkDocs muss mit `-a 0.0.0.0:8005` gestartet werden
+- **Python-Version**: Mindestens Python 3.10 erforderlich
+
+## Schnellstart mit Start-Skripten
+
+Das Projekt enthält praktische Start-Skripte, die alle Server automatisch starten:
+
+### Windows
+
+```bash
+start.bat
+```
+
+### Linux/macOS
+
+```bash
+chmod +x start.sh  # Einmalig: Ausführungsrechte setzen
+./start.sh
+```
+
+### Was machen die Skripte?
+
+Die Start-Skripte starten automatisch:
+
+1. **Build Control Server** (Port 8001)
+   - Ermöglicht Build-Pause vom Browser aus
+   - Steuert `.mkdocs-build-paused` Flag
+
+2. **MkDocs Server** (Port 8005)
+   - Mit Live Edit Support (WebSocket Port 9001)
+   - Automatisches Live-Reload bei Änderungen
+
+### Features nach dem Start
+
+- 🌐 **Dokumentation**: http://127.0.0.1:8005
+- 🎛️ **Build Control**: http://localhost:8001
+- ✏️ **Live Edit**: Direkt im Browser bearbeiten
+- 🔨 **Build Toggle**: Klicke auf den Button oben rechts
+- ⚡ **Auto-Reload**: Änderungen werden sofort sichtbar
+
+### Server beenden
+
+- **Windows**: `Ctrl+C` im Terminal drücken
+- **Linux/macOS**: `Ctrl+C` im Terminal drücken
+
+Die Skripte beenden automatisch beide Server sauber.
+
+## Build Control Hook
+
+Das Projekt enthält ein Build Control System, das es ermöglicht, den HTML-Build vom Browser aus zu pausieren, während die LLM-Dokumentations-Generierung im Hintergrund weiterläuft.
+
+### Manuelle Verwendung
+
+Falls Sie die Server einzeln starten möchten:
+
+1. **Control Server starten** (in einem separaten Terminal):
+
+```bash
+python mkdocs_build_control.py
+```
+
+Der Server läuft auf http://localhost:8001
+
+2. **MkDocs starten**:
+
+```bash
+mkdocs serve -a 0.0.0.0:8005
+```
+
+3. **Im Browser**: Klicke auf den Build-Toggle-Button (🔨) oben rechts
+
+### Funktionsweise
+
+- **Build aktiv (🟢)**: HTML-Dateien werden bei Änderungen neu gebaut
+- **Build pausiert (🟡)**: HTML-Build ist deaktiviert, LLM-Generierung läuft weiter
+
+Der Hook prüft vor jedem Build die Existenz der Datei `.mkdocs-build-paused`:
+- Wenn vorhanden → Build wird übersprungen
+- Wenn nicht vorhanden → Normaler Build
+
+### Dateien
+
+- `hooks/build_control.py` - MkDocs Hook, der den Build pausiert
+- `mkdocs_build_control.py` - HTTP-Server für Browser-Control
+- `docs/assets/extra.js` - Browser Toggle-Button
+- `docs/assets/extra.css` - Styling für Toggle-Button
+
 ## Entwicklung
 
 ### Live-Reload während der Entwicklung
@@ -260,7 +425,14 @@ Die Suche funktioniert nur im `serve` oder `build` Modus.
 ## Nützliche Befehle
 
 ```bash
-# Entwicklungsserver starten
+# Alle Server starten (empfohlen)
+start.bat       # Windows
+./start.sh      # Linux/macOS
+
+# Entwicklungsserver starten (mit Live Edit Support)
+mkdocs serve -a 0.0.0.0:8005
+
+# Entwicklungsserver starten (Standard, ohne Live Edit)
 mkdocs serve
 
 # Production Build
