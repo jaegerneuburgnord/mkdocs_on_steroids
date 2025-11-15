@@ -228,6 +228,9 @@ class LLMAutoDocPlugin(BasePlugin[LLMAutoDocPluginConfig]):
 
             docs_dir = Path(config['docs_dir'])
 
+            # Track successfully processed files for cache update
+            successfully_processed_files = []
+
             # Generate High-Level Documentation
             if self.config.generate_high_level:
                 logger.info("Generating high-level documentation...")
@@ -256,12 +259,17 @@ class LLMAutoDocPlugin(BasePlugin[LLMAutoDocPluginConfig]):
 
                 desc = "📦 Generating Module Docs" if self.config.show_generation_progress else None
                 for module in tqdm(modules_to_process, desc=desc, unit="module", disable=not self.config.show_generation_progress):
-                    files = self.mid_level_agent.generate(
-                        module=module,
-                        project_structure=project_structure,
-                        output_dir=str(output_dir)
-                    )
-                    mid_level_files.extend(files)
+                    try:
+                        files = self.mid_level_agent.generate(
+                            module=module,
+                            project_structure=project_structure,
+                            output_dir=str(output_dir)
+                        )
+                        mid_level_files.extend(files)
+                        # Mark module files as successfully processed
+                        successfully_processed_files.extend(module['files'])
+                    except Exception as e:
+                        logger.error(f"Failed to generate mid-level docs for module {module.get('name', 'unknown')}: {e}")
 
                 # Log skipped modules
                 skipped = len(project_structure['modules']) - len(modules_to_process)
@@ -326,6 +334,8 @@ class LLMAutoDocPlugin(BasePlugin[LLMAutoDocPluginConfig]):
                                     # Immediately add to generated_files so they can be picked up
                                     with self.files_lock:
                                         self.generated_files.extend(files)
+                                    # Mark file as successfully processed for cache update
+                                    successfully_processed_files.append(processed_path)
                                 if error:
                                     logger.error(f"Failed to generate documentation for {processed_path}: {error}")
                             except Exception as exc:
@@ -341,11 +351,18 @@ class LLMAutoDocPlugin(BasePlugin[LLMAutoDocPluginConfig]):
                 with self.files_lock:
                     self.cross_ref_manager.update_references(str(docs_dir), self.generated_files.copy())
 
-            # Update cache
-            self.cache_manager.update_cache(
-                str(project_path),
-                project_structure['all_files']
-            )
+            # Update cache - ONLY for successfully processed files
+            # This prevents failed files from being marked as "processed" in the cache
+            if successfully_processed_files:
+                # Remove duplicates while preserving order
+                unique_processed_files = list(dict.fromkeys(successfully_processed_files))
+                logger.info(f"Updating cache for {len(unique_processed_files)} successfully processed files")
+                self.cache_manager.update_cache(
+                    str(project_path),
+                    unique_processed_files
+                )
+            else:
+                logger.info("No files were successfully processed - cache not updated")
 
             with self.files_lock:
                 total_files = len(self.generated_files)
