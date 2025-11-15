@@ -119,7 +119,7 @@ auto result = fibonacci(fibonacci, 10).get();
 log::info("Fibonacci(10) = {}", result);
 ```
 
-## Async/Await Pattern
+## Async/Await Pattern {#asyncawait}
 
 ### C++20 Coroutines
 

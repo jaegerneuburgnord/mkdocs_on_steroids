@@ -332,3 +332,128 @@ table tr:hover {
         border-color: #404040;
     }
 }
+
+/* ========================================
+   MkDocs Build Control Toggle Button
+   ======================================== */
+
+#build-control-toggle-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.build-control-toggle-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    background-color: var(--md-primary-fg-color);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 25px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+.build-control-toggle-label:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+#build-control-toggle {
+    display: none;
+}
+
+.build-control-toggle-text {
+    font-size: 20px;
+    line-height: 1;
+    display: inline-block;
+    transition: transform 0.3s ease;
+}
+
+.build-control-status-dot {
+    transition: background-color 0.3s ease;
+}
+
+/* When checkbox is checked (enabled) */
+#build-control-toggle:checked + .build-control-toggle-text {
+    animation: hammer-swing 0.6s ease-in-out;
+}
+
+/* When checkbox is unchecked (disabled/paused) */
+#build-control-toggle:not(:checked) ~ .build-control-toggle-label {
+    background-color: #ff9800;
+    opacity: 0.9;
+}
+
+.build-control-toggle-label:active .build-control-toggle-text {
+    transform: scale(0.9);
+}
+
+@keyframes hammer-swing {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-15deg); }
+    75% { transform: rotate(15deg); }
+}
+
+/* ========================================
+   Build Control Notification
+   ======================================== */
+
+.build-control-notification {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100px);
+    background-color: var(--md-primary-fg-color);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    z-index: 2000;
+    opacity: 0;
+    transition: all 0.3s ease;
+    max-width: 90%;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: pre-line;
+}
+
+.build-control-notification.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Dark mode adjustments */
+[data-md-color-scheme="slate"] .build-control-toggle-label {
+    background-color: var(--md-accent-fg-color);
+}
+
+[data-md-color-scheme="slate"] #build-control-toggle:not(:checked) ~ .build-control-toggle-label {
+    background-color: #ff9800;
+}
+
+/* Mobile responsive */
+@media screen and (max-width: 768px) {
+    #build-control-toggle-container {
+        top: 70px;
+        right: 10px;
+    }
+
+    .build-control-toggle-label {
+        padding: 8px 12px;
+    }
+
+    .build-control-toggle-text {
+        font-size: 18px;
+    }
+
+    .build-control-notification {
+        font-size: 13px;
+        padding: 10px 20px;
+        max-width: 85%;
+    }
+}

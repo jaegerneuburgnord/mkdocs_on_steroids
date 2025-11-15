@@ -337,7 +337,7 @@ Jetzt, wo du die Grundlagen kennst:
 
 ## Vollständiges Beispielprojekt
 
-Ein vollständiges Beispielprojekt mit Build-System, Tests und CI/CD findest du im [examples](../examples/) Verzeichnis:
+Ein vollständiges Beispielprojekt mit Build-System, Tests und CI/CD findest du im [examples](../examples/index.md) Verzeichnis:
 
 ```bash
 git clone https://github.com/youruser/advlib-examples

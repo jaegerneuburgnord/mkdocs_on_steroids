@@ -1,7 +1,37 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(http_client.txt)",
+      "Bash(thread_pool.txt)",
+      "Bash(parallel_algos.txt)",
+      "Bash(all_examples.txt)",
+      "Bash(powershell -Command:*)",
+      "Bash(powershell:*)",
+      "Bash(dir:*)",
+      "Bash(for:*)",
+      "Bash(do if [ -f \"$file\" ])",
+      "Bash(then echo \"EXISTS: $file\")",
+      "Bash(else echo \"MISSING: $file\")",
+      "Bash(fi)",
+      "Bash(done)",
+      "Bash(test:*)",
+      "Bash(mkdocs build:*)",
+      "Bash(pip --version:*)",
+      "Bash(pip install:*)",
+      "Bash(python -m mkdocs:*)",
+      "Bash(python -m py_compile:*)",
+      "Bash(python fix_fstrings.py:*)",
+      "Bash(git checkout:*)",
+      "Bash(chmod:*)",
+      "Bash(python -c:*)",
+      "Bash(curl:*)",
+      "Bash(if [ -d \".cache/llm-autodoc\" ])",
+      "Bash(then rm -rf .cache/llm-autodoc)",
+      "Bash(else echo \"No cache directory found\")",
+      "Bash(lsof:*)",
+      "Bash(netstat:*)",
+      "Bash(mkdocs serve:*)"
     ],
     "deny": [],
     "ask": []

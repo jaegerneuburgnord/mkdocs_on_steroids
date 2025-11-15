@@ -344,6 +344,160 @@
     }
 
     // ========================================
+    // MkDocs Build Control Toggle
+    // ========================================
+
+    const BUILD_CONTROL_URL = 'http://localhost:8001';
+
+    function addBuildControlToggle() {
+        const storageKey = 'advlib-build-enabled';
+
+        // Get saved preference (default: enabled)
+        let buildEnabled = localStorage.getItem(storageKey) !== 'false';
+
+        // Create toggle container
+        const toggleContainer = document.createElement('div');
+        toggleContainer.id = 'build-control-toggle-container';
+        toggleContainer.title = 'MkDocs HTML-Build ein-/ausschalten';
+
+        // Create toggle checkbox
+        const toggleCheckbox = document.createElement('input');
+        toggleCheckbox.type = 'checkbox';
+        toggleCheckbox.id = 'build-control-toggle';
+        toggleCheckbox.checked = buildEnabled;
+
+        // Create label
+        const toggleLabel = document.createElement('label');
+        toggleLabel.htmlFor = 'build-control-toggle';
+        toggleLabel.className = 'build-control-toggle-label';
+
+        // Create icon/text
+        const toggleText = document.createElement('span');
+        toggleText.className = 'build-control-toggle-text';
+        toggleText.innerHTML = '🔨';
+        toggleText.title = 'HTML-Build ' + (buildEnabled ? 'aktiviert' : 'pausiert');
+
+        // Create status indicator
+        const statusDot = document.createElement('span');
+        statusDot.className = 'build-control-status-dot';
+        statusDot.style.cssText = `
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: ${buildEnabled ? '#4caf50' : '#ff9800'};
+            margin-left: 8px;
+        `;
+
+        toggleLabel.appendChild(toggleCheckbox);
+        toggleLabel.appendChild(toggleText);
+        toggleLabel.appendChild(statusDot);
+        toggleContainer.appendChild(toggleLabel);
+
+        // Add to document
+        document.body.appendChild(toggleContainer);
+
+        // Check initial server status
+        checkBuildStatus().then(status => {
+            if (status !== null && status.paused !== !buildEnabled) {
+                // Sync with server status
+                buildEnabled = !status.paused;
+                toggleCheckbox.checked = buildEnabled;
+                localStorage.setItem(storageKey, buildEnabled);
+                updateToggleUI(buildEnabled, toggleText, statusDot);
+            }
+        });
+
+        // Handle toggle change
+        toggleCheckbox.addEventListener('change', async () => {
+            buildEnabled = toggleCheckbox.checked;
+            localStorage.setItem(storageKey, buildEnabled);
+
+            // Send request to control server
+            try {
+                const endpoint = buildEnabled ? '/resume' : '/pause';
+                const response = await fetch(BUILD_CONTROL_URL + endpoint, {
+                    method: 'POST',
+                    mode: 'cors'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    updateToggleUI(buildEnabled, toggleText, statusDot);
+                    showNotification(
+                        buildEnabled
+                            ? '🟢 HTML-Build aktiviert - Dokumentation wird aktualisiert'
+                            : '🟡 HTML-Build pausiert - LLM-Generierung läuft weiter'
+                    );
+                    console.log('Build Control:', data.message);
+                } else {
+                    throw new Error('Server nicht erreichbar');
+                }
+            } catch (error) {
+                console.error('Build Control Server Error:', error);
+                showNotification(
+                    '⚠️ Build Control Server nicht erreichbar!\n' +
+                    'Starte: python mkdocs_build_control.py',
+                    5000
+                );
+                // Revert checkbox
+                toggleCheckbox.checked = !buildEnabled;
+                buildEnabled = !buildEnabled;
+                localStorage.setItem(storageKey, buildEnabled);
+            }
+        });
+    }
+
+    function updateToggleUI(enabled, toggleText, statusDot) {
+        toggleText.title = 'HTML-Build ' + (enabled ? 'aktiviert' : 'pausiert');
+        statusDot.style.backgroundColor = enabled ? '#4caf50' : '#ff9800';
+    }
+
+    async function checkBuildStatus() {
+        try {
+            const response = await fetch(BUILD_CONTROL_URL + '/status', {
+                method: 'GET',
+                mode: 'cors'
+            });
+            if (response.ok) {
+                return await response.json();
+            }
+        } catch (error) {
+            console.log('Build Control Server nicht verfügbar (normal beim ersten Start)');
+        }
+        return null;
+    }
+
+    function showNotification(message, duration = 3000) {
+        // Remove any existing notification
+        const existing = document.getElementById('build-control-notification');
+        if (existing) {
+            existing.remove();
+        }
+
+        // Create notification
+        const notification = document.createElement('div');
+        notification.id = 'build-control-notification';
+        notification.className = 'build-control-notification';
+        notification.textContent = message;
+
+        document.body.appendChild(notification);
+
+        // Trigger animation
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 10);
+
+        // Remove after duration
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, duration);
+    }
+
+    // ========================================
     // Initialize Everything
     // ========================================
 
@@ -364,6 +518,7 @@
         rememberTabSelections();
         addReadingProgress();
         addBackToTop();
+        addBuildControlToggle();
         enableSearchShortcut();
         optimizePrint();
         logPerformance();

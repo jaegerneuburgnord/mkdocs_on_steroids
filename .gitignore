@@ -10,6 +10,7 @@ __pycache__/
 .Python
 env/
 venv/
+venvLinux/
 ENV/
 build/
 develop-eggs/
@@ -44,3 +45,8 @@ Thumbs.db
 *.exe
 *.out
 *.app
+
+# Environment variables (ChatBot API Keys)
+.env
+.env.local
+.env.*.local

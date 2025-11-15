@@ -1,0 +1,152 @@
+# Example MkDocs configuration with LLM AutoDoc plugin
+
+site_name: My C++ Project Documentation
+site_description: Automatically generated documentation
+site_author: Your Name
+
+# Repository
+repo_url: https://github.com/yourusername/yourproject
+repo_name: yourproject
+
+# Theme
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - search.suggest
+    - search.highlight
+    - content.code.annotate
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+# Extensions
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - pymdownx.snippets
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+# Plugins
+plugins:
+  - search
+  - llm-autodoc:
+      # ===== BASIC CONFIGURATION =====
+      enabled: true
+      cpp_project_path: '../your-cpp-project'  # Path to your C++ project
+
+      # ===== LLM PROVIDER =====
+      # Choose: 'anthropic', 'openai', 'ollama', or 'lmstudio'
+      llm_provider: 'anthropic'
+
+      # API Key (use environment variable for security)
+      llm_api_key: !ENV ANTHROPIC_API_KEY
+      # Or use OpenAI:
+      # llm_api_key: !ENV OPENAI_API_KEY
+
+      # Model Selection
+      llm_model: 'claude-3-5-sonnet-20241022'
+      # OpenAI alternatives:
+      # llm_model: 'gpt-4'
+      # llm_model: 'gpt-4-turbo-preview'
+      # Ollama alternatives:
+      # llm_model: 'llama3'
+      # llm_model: 'codellama'
+      # LM Studio alternatives:
+      # llm_model: 'deepseek-coder-6.7b-instruct'
+      # llm_model: 'codellama-13b-instruct'
+
+      # Base URL for local providers
+      # llm_base_url: 'http://localhost:11434/v1'  # Ollama
+      # llm_base_url: 'http://localhost:1234/v1'   # LM Studio
+
+      # ===== DOCUMENTATION LEVELS =====
+      generate_high_level: true     # Project overview & architecture
+      generate_mid_level: true      # Module documentation
+      generate_detailed_level: true # Detailed API documentation
+
+      # ===== OUTPUT PATHS =====
+      # All paths are relative to the docs/ directory
+      high_level_output: 'generated'
+      mid_level_output: 'generated/modules'
+      detailed_level_output: 'generated/api'
+
+      # ===== CACHING =====
+      enable_cache: true
+      cache_dir: '.cache/llm-autodoc'
+      force_regenerate: false  # Set to true to regenerate all docs
+
+      # ===== QUALITY CONTROL =====
+      enable_quality_check: true      # Enable second-pass quality improvement
+      enable_cross_references: true   # Auto-link between doc levels
+      enable_code_review: true        # Enable automated code review & improvement suggestions
+
+      # ===== FILE PATTERNS =====
+      include_patterns:
+        - '**/*.h'
+        - '**/*.hpp'
+        - '**/*.cpp'
+        - '**/*.cc'
+      exclude_patterns:
+        - '**/build/**'
+        - '**/third_party/**'
+        - '**/external/**'
+        - '**/vendor/**'
+        - '**/.git/**'
+        - '**/test/**'  # Add if you want to exclude tests
+
+      # ===== ADVANCED SETTINGS =====
+      max_concurrent_llm_calls: 3  # Parallel LLM requests (reduce if hitting rate limits)
+      retry_failed: true           # Retry failed LLM calls
+      verbose: false              # Enable verbose logging
+
+# Navigation
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Quick Start: getting-started/quickstart.md
+  - Tutorials:
+      - Concurrency: tutorials/advanced-concurrency.md
+  - Generated Documentation:
+      - Overview: generated/index.md
+      - Architecture: generated/01-architecture.md
+      - Modules: generated/modules/
+      - API Reference: generated/api/
+  - API Reference:
+      - Core Functions: api-reference/core-functions.md
+      - Core Types: api-reference/core-types.md
+  - About:
+      - Contributors: about/contributors.md
+
+# Extra
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/yourusername/yourproject
+
+# Copyright
+copyright: Copyright &copy; 2025 Your Name
