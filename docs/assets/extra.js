@@ -349,11 +349,28 @@
 
     const BUILD_CONTROL_URL = 'http://localhost:8001';
 
-    function addBuildControlToggle() {
+    async function addBuildControlToggle() {
+        // First check if Build Control Server is available
+        const serverAvailable = await checkBuildStatus();
+
+        if (!serverAvailable) {
+            // Server not available - don't show UI, no errors
+            console.log('ℹ️ Build Control Server not available - feature disabled');
+            return;
+        }
+
+        console.log('✅ Build Control Server available - enabling toggle');
+
         const storageKey = 'advlib-build-enabled';
 
         // Get saved preference (default: enabled)
         let buildEnabled = localStorage.getItem(storageKey) !== 'false';
+
+        // Sync with server status
+        if (serverAvailable.paused !== undefined) {
+            buildEnabled = !serverAvailable.paused;
+            localStorage.setItem(storageKey, buildEnabled.toString());
+        }
 
         // Create toggle container
         const toggleContainer = document.createElement('div');
@@ -396,17 +413,6 @@
 
         // Add to document
         document.body.appendChild(toggleContainer);
-
-        // Check initial server status
-        checkBuildStatus().then(status => {
-            if (status !== null && status.paused !== !buildEnabled) {
-                // Sync with server status
-                buildEnabled = !status.paused;
-                toggleCheckbox.checked = buildEnabled;
-                localStorage.setItem(storageKey, buildEnabled);
-                updateToggleUI(buildEnabled, toggleText, statusDot);
-            }
-        });
 
         // Handle toggle change
         toggleCheckbox.addEventListener('change', async () => {
@@ -457,13 +463,15 @@
         try {
             const response = await fetch(BUILD_CONTROL_URL + '/status', {
                 method: 'GET',
-                mode: 'cors'
+                mode: 'cors',
+                signal: AbortSignal.timeout(2000)  // 2 second timeout
             });
             if (response.ok) {
                 return await response.json();
             }
         } catch (error) {
-            console.log('Build Control Server nicht verfügbar (normal beim ersten Start)');
+            // Server not available - this is normal if Build Control Server is not running
+            // No error logging needed
         }
         return null;
     }

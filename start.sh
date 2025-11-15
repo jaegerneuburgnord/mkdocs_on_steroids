@@ -108,28 +108,35 @@ echo -e "${BLUE}  Server werden gestartet...${NC}"
 echo -e "${BLUE}============================================================================${NC}"
 echo ""
 
-# Start Build Control Server in background
-echo -e "${YELLOW}[1/2] Starte Build Control Server (Port 8001)...${NC}"
-$PYTHON_CMD mkdocs_build_control.py > /dev/null 2>&1 &
-BUILD_CONTROL_PID=$!
-echo $BUILD_CONTROL_PID > "$BUILD_CONTROL_PID_FILE"
+# Check if Build Control Server should be started (optional feature)
+# Set ENABLE_BUILD_CONTROL=1 to enable it
+if [ "${ENABLE_BUILD_CONTROL:-0}" = "1" ]; then
+    echo -e "${YELLOW}[1/2] Starte Build Control Server (Port 8001)...${NC}"
+    $PYTHON_CMD mkdocs_build_control.py > /dev/null 2>&1 &
+    BUILD_CONTROL_PID=$!
+    echo $BUILD_CONTROL_PID > "$BUILD_CONTROL_PID_FILE"
 
-# Wait for Build Control Server to start
-sleep 2
+    # Wait for Build Control Server to start
+    sleep 2
 
-# Check if Build Control Server is still running
-if ! ps -p "$BUILD_CONTROL_PID" > /dev/null 2>&1; then
-    echo -e "${RED}[ERROR] Build Control Server konnte nicht gestartet werden!${NC}"
-    cleanup
-    exit 1
+    # Check if Build Control Server is still running
+    if ! ps -p "$BUILD_CONTROL_PID" > /dev/null 2>&1; then
+        echo -e "${RED}[WARNING] Build Control Server konnte nicht gestartet werden!${NC}"
+        echo -e "${YELLOW}          MkDocs wird ohne Build Control gestartet...${NC}"
+        rm -f "$BUILD_CONTROL_PID_FILE"
+    else
+        echo -e "${GREEN}      ✓ Build Control Server gestartet (PID: $BUILD_CONTROL_PID)${NC}"
+        echo -e "${GREEN}        URL: http://localhost:8001${NC}"
+    fi
+    echo ""
+else
+    echo -e "${BLUE}[INFO] Build Control Server deaktiviert${NC}"
+    echo -e "${BLUE}       Aktivieren: export ENABLE_BUILD_CONTROL=1${NC}"
+    echo ""
 fi
 
-echo -e "${GREEN}      ✓ Build Control Server gestartet (PID: $BUILD_CONTROL_PID)${NC}"
-echo -e "${GREEN}        URL: http://localhost:8001${NC}"
-echo ""
-
 # Start MkDocs serve with Live Edit support
-echo -e "${YELLOW}[2/2] Starte MkDocs Server (Port 8005)...${NC}"
+echo -e "${YELLOW}[1/1] Starte MkDocs Server (Port 8005)...${NC}"
 echo -e "${GREEN}      ✓ MkDocs Server wird gestartet${NC}"
 echo -e "${GREEN}        URL: http://127.0.0.1:8005${NC}"
 echo -e "${GREEN}        Live Edit: AKTIVIERT (WebSocket Port 9001)${NC}"
@@ -140,11 +147,15 @@ echo -e "${GREEN}  Server erfolgreich gestartet!${NC}"
 echo -e "${BLUE}============================================================================${NC}"
 echo ""
 echo -e "  ${BLUE}Dokumentation:${NC}  http://127.0.0.1:8005"
-echo -e "  ${BLUE}Build Control:${NC}  http://localhost:8001"
+if [ "${ENABLE_BUILD_CONTROL:-0}" = "1" ] && [ -f "$BUILD_CONTROL_PID_FILE" ]; then
+    echo -e "  ${BLUE}Build Control:${NC}  http://localhost:8001"
+fi
 echo ""
 echo -e "  ${GREEN}Features:${NC}"
 echo -e "  ${GREEN}•${NC} Live Edit      - Bearbeite Seiten direkt im Browser"
-echo -e "  ${GREEN}•${NC} Build Control  - Klicke auf den 🔨 Button oben rechts"
+if [ "${ENABLE_BUILD_CONTROL:-0}" = "1" ] && [ -f "$BUILD_CONTROL_PID_FILE" ]; then
+    echo -e "  ${GREEN}•${NC} Build Control  - Klicke auf den 🔨 Button oben rechts"
+fi
 echo -e "  ${GREEN}•${NC} Auto-Reload    - Änderungen werden automatisch geladen"
 echo ""
 echo -e "  ${YELLOW}Drücke Ctrl+C zum Beenden der Server${NC}"

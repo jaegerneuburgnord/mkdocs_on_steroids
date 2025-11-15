@@ -59,16 +59,23 @@ echo   Server werden gestartet...
 echo ============================================================================
 echo.
 
-REM Start Build Control Server in background
-echo [1/2] Starte Build Control Server (Port 8001)...
-start "MkDocs Build Control Server" /MIN python mkdocs_build_control.py
-timeout /t 2 /nobreak >nul
-echo       ✓ Build Control Server gestartet
-echo         URL: http://localhost:8001
-echo.
+REM Check if Build Control Server should be started (optional feature)
+REM Set ENABLE_BUILD_CONTROL=1 to enable it
+if "%ENABLE_BUILD_CONTROL%"=="1" (
+    echo [1/2] Starte Build Control Server (Port 8001^)...
+    start "MkDocs Build Control Server" /MIN python mkdocs_build_control.py
+    timeout /t 2 /nobreak >nul
+    echo       ✓ Build Control Server gestartet
+    echo         URL: http://localhost:8001
+    echo.
+) else (
+    echo [INFO] Build Control Server deaktiviert
+    echo        Aktivieren: set ENABLE_BUILD_CONTROL=1
+    echo.
+)
 
 REM Start MkDocs serve with Live Edit support
-echo [2/2] Starte MkDocs Server (Port 8005)...
+echo [1/1] Starte MkDocs Server (Port 8005)...
 echo       ✓ MkDocs Server wird gestartet
 echo         URL: http://127.0.0.1:8005
 echo         Live Edit: AKTIVIERT (WebSocket Port 9001)
@@ -79,11 +86,15 @@ echo   Server erfolgreich gestartet!
 echo ============================================================================
 echo.
 echo   Dokumentation:  http://127.0.0.1:8005
-echo   Build Control:  http://localhost:8001
+if "%ENABLE_BUILD_CONTROL%"=="1" (
+    echo   Build Control:  http://localhost:8001
+)
 echo.
 echo   Features:
 echo   • Live Edit      - Bearbeite Seiten direkt im Browser
-echo   • Build Control  - Klicke auf den 🔨 Button oben rechts
+if "%ENABLE_BUILD_CONTROL%"=="1" (
+    echo   • Build Control  - Klicke auf den 🔨 Button oben rechts
+)
 echo   • Auto-Reload    - Änderungen werden automatisch geladen
 echo.
 echo   Drücke Ctrl+C zum Beenden der Server
@@ -98,6 +109,8 @@ REM Cleanup when mkdocs exits
 echo.
 echo [INFO] Server werden beendet...
 del %LOCK_FILE% 2>nul
-taskkill /FI "WindowTitle eq MkDocs Build Control Server*" /T /F >nul 2>&1
+if "%ENABLE_BUILD_CONTROL%"=="1" (
+    taskkill /FI "WindowTitle eq MkDocs Build Control Server*" /T /F >nul 2>&1
+)
 echo [INFO] Alle Server beendet.
 pause

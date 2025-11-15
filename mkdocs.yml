@@ -157,8 +157,10 @@ plugins:
       retry_failed: true
       verbose: true  # Aktiviert für besseres Debugging
 
-      # Background Processing (NEU!)
-      background_generation: true  # Generierung läuft im Hintergrund, blockiert nicht den Start
+      # Background Processing
+      # false = Dokumentation wird beim Startup vollständig generiert (Server startet danach)
+      # true  = Dokumentation wird im Hintergrund generiert (Server startet sofort)
+      background_generation: false  # Default: Synchron beim Startup
       show_generation_progress: true  # Zeigt Fortschrittsbalken während der Generierung
   - chatbot:
       enabled: true
