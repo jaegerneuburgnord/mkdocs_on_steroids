@@ -4,32 +4,41 @@ MkDocs Build Control Hook
 Prüft vor jedem Build, ob der Build pausiert werden soll.
 
 Wenn die Datei '.mkdocs-build-paused' existiert, wird der Build übersprungen.
+Der erste Build beim Server-Start läuft immer durch.
 Dies ermöglicht es, vom Browser aus den HTML-Build zu pausieren,
 während die LLM-Dokumentations-Generierung weiterläuft.
 """
 
 from pathlib import Path
 import logging
-import sys
+from mkdocs.structure.files import Files
 
 logger = logging.getLogger('mkdocs.hooks.build_control')
 
 BUILD_PAUSE_FLAG = Path('.mkdocs-build-paused')
 
-
-class BuildPausedException(Exception):
-    """Exception, die geworfen wird, wenn der Build pausiert ist"""
-    pass
+# Globale Variable zum Tracking des ersten Builds
+_first_build_done = False
 
 
 def on_pre_build(config, **kwargs):
     """
     Hook, der vor jedem Build ausgeführt wird.
 
-    Wenn die Pause-Flag-Datei existiert, wird der Build abgebrochen.
-    Dies verhindert, dass HTML-Dateien neu gebaut werden, während
-    die LLM-Dokumentations-Generierung im Hintergrund weiterläuft.
+    Beim ersten Build wird immer durchgebaut.
+    Bei nachfolgenden Builds: Wenn die Pause-Flag-Datei existiert,
+    wird der Build übersprungen (durch Rückgabe leerer Dateiliste in on_files).
     """
+    global _first_build_done
+
+    # Erster Build läuft immer durch
+    if not _first_build_done:
+        logger.info("🚀 Initialer Build - HTML-Dateien werden generiert")
+        config['_build_paused'] = False
+        _first_build_done = True
+        return
+
+    # Nachfolgende Builds: Prüfe Pause-Flag
     if BUILD_PAUSE_FLAG.exists():
         logger.warning("")
         logger.warning("=" * 70)
@@ -39,16 +48,12 @@ def on_pre_build(config, **kwargs):
         logger.warning("  🚫 HTML-Dateien werden nicht aktualisiert")
         logger.warning("  ▶️  Klicke auf den Toggle-Button (🔨) im Browser zum Fortsetzen")
         logger.warning("  📄 Flag-Datei: .mkdocs-build-paused")
+        logger.warning("  🌐 Server läuft weiter - Build wird übersprungen")
         logger.warning("=" * 70)
         logger.warning("")
 
-        # Setze Marker für andere Hooks
+        # Setze Marker für on_files Hook
         config['_build_paused'] = True
-
-        # Verhindere den Build durch Exit
-        # Dies ist die sauberste Methode, da MkDocs serve den Server
-        # weiterlaufen lässt und nur den Build-Prozess beendet
-        sys.exit(0)
     else:
         config['_build_paused'] = False
         logger.info("🟢 HTML-Build aktiviert - Dokumentation wird aktualisiert")
@@ -59,14 +64,13 @@ def on_files(files, config, **kwargs):
     Hook, der die Dateiliste manipulieren kann.
 
     Wenn der Build pausiert ist, geben wir eine leere Dateiliste zurück,
-    sodass nichts gebaut wird. Dies ist ein Fallback, falls on_pre_build
-    nicht ausreichend ist.
+    sodass nichts gebaut wird. Der Server läuft aber weiter.
     """
     if config.get('_build_paused', False):
-        logger.debug("Build pausiert - keine Dateien werden verarbeitet")
-        # Rückgabe einer leeren Files-Collection würde funktionieren,
-        # aber wir verlassen uns auf sys.exit(0) in on_pre_build
-        return files
+        logger.info("⏭️  Build übersprungen - Server läuft weiter")
+        # Leere Files-Collection zurückgeben = nichts wird gebaut
+        return Files([])
+
     return files
 
 
