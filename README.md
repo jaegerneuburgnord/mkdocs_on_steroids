@@ -22,6 +22,7 @@ Diese Dokumentation demonstriert Best Practices für die Dokumentation von C++-P
 - 📖 Umfangreiche Code-Beispiele
 - 📊 Mermaid Diagramme
 - 🏷️ Tags und Kategorien
+- 🔨 Build Control Hook - Pausiere HTML-Builds vom Browser aus
 
 ## Voraussetzungen
 
@@ -240,6 +241,44 @@ graph TD
     B --> C[End]
 ```
 ```
+
+## Build Control Hook
+
+Das Projekt enthält ein Build Control System, das es ermöglicht, den HTML-Build vom Browser aus zu pausieren, während die LLM-Dokumentations-Generierung im Hintergrund weiterläuft.
+
+### Verwendung
+
+1. **Control Server starten** (in einem separaten Terminal):
+
+```bash
+python mkdocs_build_control.py
+```
+
+Der Server läuft auf http://localhost:8001
+
+2. **MkDocs starten**:
+
+```bash
+mkdocs serve
+```
+
+3. **Im Browser**: Klicke auf den Build-Toggle-Button (🔨) oben rechts
+
+### Funktionsweise
+
+- **Build aktiv (🟢)**: HTML-Dateien werden bei Änderungen neu gebaut
+- **Build pausiert (🟡)**: HTML-Build ist deaktiviert, LLM-Generierung läuft weiter
+
+Der Hook prüft vor jedem Build die Existenz der Datei `.mkdocs-build-paused`:
+- Wenn vorhanden → Build wird übersprungen
+- Wenn nicht vorhanden → Normaler Build
+
+### Dateien
+
+- `hooks/build_control.py` - MkDocs Hook, der den Build pausiert
+- `mkdocs_build_control.py` - HTTP-Server für Browser-Control
+- `docs/assets/extra.js` - Browser Toggle-Button
+- `docs/assets/extra.css` - Styling für Toggle-Button
 
 ## Entwicklung
 
