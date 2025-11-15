@@ -152,6 +152,7 @@ echo -e "${BLUE}================================================================
 echo ""
 
 # Start MkDocs serve (blocking, in foreground)
+export PYTHONPATH="/home/user/mkdocs_on_steroids/plugins/mkdocs-llm-autodoc:/home/user/mkdocs_on_steroids/plugins/mkdocs-chatbot:$PYTHONPATH"
 $PYTHON_CMD -m mkdocs serve -a 0.0.0.0:8005
 
 # Cleanup will be called automatically via trap
