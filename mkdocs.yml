@@ -97,6 +97,9 @@ plugins:
   - search:
       lang: de
       separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
+  - live-edit:
+      websockets_port: 9001
+      debug_mode: false
   - tags
   - git-revision-date-localized:
       enable_creation_date: true

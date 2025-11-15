@@ -23,10 +23,11 @@ Diese Dokumentation demonstriert Best Practices für die Dokumentation von C++-P
 - 📊 Mermaid Diagramme
 - 🏷️ Tags und Kategorien
 - 🔨 Build Control Hook - Pausiere HTML-Builds vom Browser aus
+- ✏️ Live Edit - Bearbeite Seiten direkt im Browser
 
 ## Voraussetzungen
 
-- Python 3.8+
+- Python 3.10+ (erforderlich für Live Edit Plugin)
 - pip
 
 ## Installation
@@ -46,11 +47,15 @@ pip install -r requirements.txt
 
 ### 3. MkDocs starten
 
+Für **Live Edit Funktionalität** (erforderlich für Browser-Bearbeitung):
+
 ```bash
-mkdocs serve
+mkdocs serve -a 0.0.0.0:8000
 ```
 
 Die Dokumentation ist dann verfügbar unter: http://127.0.0.1:8000
+
+**Hinweis**: Das `-a 0.0.0.0:8000` Flag ist notwendig, damit das Live Edit Plugin korrekt funktioniert.
 
 ## Projekt-Struktur
 
@@ -242,6 +247,56 @@ graph TD
 ```
 ```
 
+## Live Edit Plugin
+
+Das **mkdocs-live-edit-plugin** ermöglicht es, Markdown-Seiten direkt im Browser zu bearbeiten - kein Editor erforderlich!
+
+### Features
+
+- ✏️ **Bearbeiten**: Editiere Markdown direkt im Browser
+- 📄 **Erstellen**: Neue Seiten mit einem Klick anlegen
+- ✂️ **Löschen**: Seiten direkt aus dem Browser entfernen
+- 🔄 **Umbenennen**: Seiten und Dateien umbenennen
+- 💾 **Auto-Save**: Änderungen werden sofort gespeichert
+- 🔥 **Live-Reload**: MkDocs lädt die Seite automatisch neu
+
+### Verwendung
+
+1. **MkDocs mit korrektem Host starten**:
+
+```bash
+mkdocs serve -a 0.0.0.0:8000
+```
+
+2. **Im Browser**: Navigiere zu einer Seite
+3. **Edit-Button**: Klicke auf den Edit-Button (erscheint automatisch)
+4. **Bearbeiten**: Editiere den Markdown-Inhalt
+5. **Speichern**: Drücke `Ctrl+S` (Windows/Linux) oder `Cmd+S` (Mac)
+
+### Tastenkombinationen
+
+- `Ctrl/Cmd + S` - Änderungen speichern
+- `Ctrl/Cmd + B` - Text fett formatieren
+- `Ctrl/Cmd + I` - Text kursiv formatieren
+- `Alt/Opt + S` - Text durchstreichen
+
+### Konfiguration
+
+In `mkdocs.yml`:
+
+```yaml
+plugins:
+  - live-edit:
+      websockets_port: 9001  # WebSocket Port (default: 9001)
+      debug_mode: false      # Debug-Modus für Browser-Console
+```
+
+### Wichtige Hinweise
+
+- **WebSocket-Server**: Läuft auf Port 9001 (konfigurierbar)
+- **Bind-Adresse**: MkDocs muss mit `-a 0.0.0.0:8000` gestartet werden
+- **Python-Version**: Mindestens Python 3.10 erforderlich
+
 ## Build Control Hook
 
 Das Projekt enthält ein Build Control System, das es ermöglicht, den HTML-Build vom Browser aus zu pausieren, während die LLM-Dokumentations-Generierung im Hintergrund weiterläuft.
@@ -299,7 +354,10 @@ Die Suche funktioniert nur im `serve` oder `build` Modus.
 ## Nützliche Befehle
 
 ```bash
-# Entwicklungsserver starten
+# Entwicklungsserver starten (mit Live Edit Support)
+mkdocs serve -a 0.0.0.0:8000
+
+# Entwicklungsserver starten (Standard, ohne Live Edit)
 mkdocs serve
 
 # Production Build
