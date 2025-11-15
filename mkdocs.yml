@@ -105,82 +105,84 @@ plugins:
       enable_creation_date: true
       type: datetime
       enable_git_follow: false
-  - llm-autodoc:
-      # Required Settings
-      # HINWEIS: Die Dokumentation wird nur generiert, wenn sich C++ Dateien ändern (dank Cache)
-      enabled: true
-      cpp_project_path: './cpp-project'
-
-      # OpenAI-Compatible Local Server Configuration (Port 1234)
-      llm_provider: 'lmstudio'
-      llm_model: 'qwen3-vl-30b-a3b-instruct'  # Ändern Sie dies zum Namen Ihres geladenen Modells
-      llm_base_url: 'http://127.0.0.1:1234/v1'  # Lokaler OpenAI-kompatibler Server
-      llm_api_key: ''  # Für lokale Server meist nicht erforderlich
-
-      # Documentation Levels (alle aktiviert für vollständige Dokumentation)
-      generate_high_level: true
-      generate_mid_level: true
-      generate_detailed_level: true  # Aktiviert - generiert vollständige API-Dokumentation
-
-      # Output Paths (relativ zu docs/)
-      high_level_output: 'generated'
-      mid_level_output: 'generated/modules'
-      detailed_level_output: 'generated/api'
-
-      # Quality Control
-      enable_quality_check: true
-      enable_cross_references: true
-      enable_code_review: true  # Automatische Code-Review & Verbesserungsvorschläge
-
-      # Caching (für schnellere Builds)
-      enable_cache: true
-      cache_dir: '.cache/llm-autodoc'
-      force_regenerate: false
-
-      # File Patterns
-      include_patterns:
-        - '**/*.h'
-        - '**/*.hpp'
-        - '**/*.cpp'
-        - '**/*.cc'
-      exclude_patterns:
-        - '**/build/**'
-        - '**/third_party/**'
-        - '**/external/**'
-        - '**/test/**'
-        - '**/tests/**'
-        - '**/.git/**'
-
-      # Performance Settings
-      max_concurrent_llm_calls: 3  # Parallele LLM-Aufrufe (3-5 empfohlen für lokale Server)
-      llm_timeout: 6000.0  # Timeout in Sekunden (Standard: 600 = 10 Minuten)
-      retry_failed: true
-      verbose: true  # Aktiviert für besseres Debugging
-
-      # Background Processing (NEU!)
-      background_generation: true  # Generierung läuft im Hintergrund, blockiert nicht den Start
-      show_generation_progress: true  # Zeigt Fortschrittsbalken während der Generierung
-  - chatbot:
-      enabled: true
-      api_key: ''  # No API key needed for local LM Studio server
-      api_base_url: 'http://127.0.0.1:1234/v1'  # Local LM Studio server (OpenAI API compatible)
-      model: 'qwen/qwen3-vl-30b'  # Change this to match your loaded model in LM Studio
-      position: 'bottom-right'
-      button_color: '#667eea'
-      button_text_color: '#ffffff'
-      chat_title: 'C++ Library Assistant'
-      placeholder_text: 'Frage mich etwas über die Dokumentation...'
-      welcome_message: 'Hallo! Ich bin dein C++ Library Assistent. Wie kann ich dir helfen?'
-      temperature: 0.7
-      max_tokens: 1000
-      system_prompt: |
-        Du bist ein hilfreicher Assistent für eine moderne C++ Bibliotheks-Dokumentation.
-        Beantworte Fragen basierend auf dem Dokumentationsinhalt.
-        Sei präzise, genau und hilfsbereit.
-        Verwende Markdown-Formatierung in deinen Antworten.
-        Biete Code-Beispiele an, wenn es angebracht ist.
-        Falls du etwas nicht weißt, sage das ehrlich.
-        Antworte auf Deutsch, wenn die Frage auf Deutsch ist, ansonsten auf Englisch.
+  # TEMPORARILY DISABLED - Installation issue with setuptools
+  # TODO: Fix plugin installation and re-enable
+  #- llm-autodoc:
+  #    # Required Settings
+  #    # HINWEIS: Die Dokumentation wird nur generiert, wenn sich C++ Dateien ändern (dank Cache)
+  #    enabled: true
+  #    cpp_project_path: './cpp-project'
+  #
+  #    # OpenAI-Compatible Local Server Configuration (Port 1234)
+  #    llm_provider: 'lmstudio'
+  #    llm_model: 'qwen3-vl-30b-a3b-instruct'  # Ändern Sie dies zum Namen Ihres geladenen Modells
+  #    llm_base_url: 'http://127.0.0.1:1234/v1'  # Lokaler OpenAI-kompatibler Server
+  #    llm_api_key: ''  # Für lokale Server meist nicht erforderlich
+  #
+  #    # Documentation Levels (alle aktiviert für vollständige Dokumentation)
+  #    generate_high_level: true
+  #    generate_mid_level: true
+  #    generate_detailed_level: true  # Aktiviert - generiert vollständige API-Dokumentation
+  #
+  #    # Output Paths (relativ zu docs/)
+  #    high_level_output: 'generated'
+  #    mid_level_output: 'generated/modules'
+  #    detailed_level_output: 'generated/api'
+  #
+  #    # Quality Control
+  #    enable_quality_check: true
+  #    enable_cross_references: true
+  #    enable_code_review: true  # Automatische Code-Review & Verbesserungsvorschläge
+  #
+  #    # Caching (für schnellere Builds)
+  #    enable_cache: true
+  #    cache_dir: '.cache/llm-autodoc'
+  #    force_regenerate: false
+  #
+  #    # File Patterns
+  #    include_patterns:
+  #      - '**/*.h'
+  #      - '**/*.hpp'
+  #      - '**/*.cpp'
+  #      - '**/*.cc'
+  #    exclude_patterns:
+  #      - '**/build/**'
+  #      - '**/third_party/**'
+  #      - '**/external/**'
+  #      - '**/test/**'
+  #      - '**/tests/**'
+  #      - '**/.git/**'
+  #
+  #    # Performance Settings
+  #    max_concurrent_llm_calls: 3  # Parallele LLM-Aufrufe (3-5 empfohlen für lokale Server)
+  #    llm_timeout: 6000.0  # Timeout in Sekunden (Standard: 600 = 10 Minuten)
+  #    retry_failed: true
+  #    verbose: true  # Aktiviert für besseres Debugging
+  #
+  #    # Background Processing (NEU!)
+  #    background_generation: true  # Generierung läuft im Hintergrund, blockiert nicht den Start
+  #    show_generation_progress: true  # Zeigt Fortschrittsbalken während der Generierung
+  #- chatbot:
+  #    enabled: true
+  #    api_key: ''  # No API key needed for local LM Studio server
+  #    api_base_url: 'http://127.0.0.1:1234/v1'  # Local LM Studio server (OpenAI API compatible)
+  #    model: 'qwen/qwen3-vl-30b'  # Change this to match your loaded model in LM Studio
+  #    position: 'bottom-right'
+  #    button_color: '#667eea'
+  #    button_text_color: '#ffffff'
+  #    chat_title: 'C++ Library Assistant'
+  #    placeholder_text: 'Frage mich etwas über die Dokumentation...'
+  #    welcome_message: 'Hallo! Ich bin dein C++ Library Assistent. Wie kann ich dir helfen?'
+  #    temperature: 0.7
+  #    max_tokens: 1000
+  #    system_prompt: |
+  #      Du bist ein hilfreicher Assistent für eine moderne C++ Bibliotheks-Dokumentation.
+  #      Beantworte Fragen basierend auf dem Dokumentationsinhalt.
+  #      Sei präzise, genau und hilfsbereit.
+  #      Verwende Markdown-Formatierung in deinen Antworten.
+  #      Biete Code-Beispiele an, wenn es angebracht ist.
+  #      Falls du etwas nicht weißt, sage das ehrlich.
+  #      Antworte auf Deutsch, wenn die Frage auf Deutsch ist, ansonsten auf Englisch.
 
 # Extensions
 markdown_extensions:

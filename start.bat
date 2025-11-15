@@ -91,6 +91,7 @@ echo ===========================================================================
 echo.
 
 REM Start MkDocs serve (blocking, in foreground)
+set PYTHONPATH=%CD%\plugins\mkdocs-llm-autodoc;%CD%\plugins\mkdocs-chatbot;%PYTHONPATH%
 python -m mkdocs serve -a 0.0.0.0:8005
 
 REM Cleanup when mkdocs exits
