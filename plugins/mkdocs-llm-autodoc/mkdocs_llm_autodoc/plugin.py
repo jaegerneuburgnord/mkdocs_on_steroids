@@ -231,6 +231,20 @@ class LLMAutoDocPlugin(BasePlugin[LLMAutoDocPluginConfig]):
             # Track successfully processed files for cache update
             successfully_processed_files = []
 
+            # Log generation plan
+            total_files_to_process = len(changed_files)
+            logger.info("=" * 70)
+            logger.info(f"📊 GENERATION PLAN:")
+            logger.info(f"   Total files to process: {total_files_to_process}")
+            if self.config.generate_high_level:
+                logger.info(f"   ✓ High-level documentation enabled")
+            if self.config.generate_mid_level:
+                modules_count = len(project_structure.get('modules', []))
+                logger.info(f"   ✓ Mid-level documentation enabled ({modules_count} modules)")
+            if self.config.generate_detailed_level:
+                logger.info(f"   ✓ Detailed API documentation enabled")
+            logger.info("=" * 70)
+
             # Generate High-Level Documentation
             if self.config.generate_high_level:
                 logger.info("Generating high-level documentation...")
@@ -257,9 +271,14 @@ class LLMAutoDocPlugin(BasePlugin[LLMAutoDocPluginConfig]):
                     if any(f in changed_files for f in module['files']) or self.config.force_regenerate
                 ]
 
+                total_modules = len(modules_to_process)
+                logger.info(f"📦 Processing {total_modules} modules...")
+
                 desc = "📦 Generating Module Docs" if self.config.show_generation_progress else None
-                for module in tqdm(modules_to_process, desc=desc, unit="module", disable=not self.config.show_generation_progress):
+                for idx, module in enumerate(tqdm(modules_to_process, desc=desc, unit="module", disable=not self.config.show_generation_progress), 1):
+                    module_name = module.get('name', 'unknown')
                     try:
+                        logger.info(f"📦 [{idx}/{total_modules}] Processing module: {module_name}")
                         files = self.mid_level_agent.generate(
                             module=module,
                             project_structure=project_structure,
@@ -268,17 +287,18 @@ class LLMAutoDocPlugin(BasePlugin[LLMAutoDocPluginConfig]):
                         mid_level_files.extend(files)
                         # Mark module files as successfully processed
                         successfully_processed_files.extend(module['files'])
+                        logger.info(f"   ✓ Module {module_name} completed ({len(files)} files generated)")
                     except Exception as e:
-                        logger.error(f"Failed to generate mid-level docs for module {module.get('name', 'unknown')}: {e}")
+                        logger.error(f"   ✗ Failed to generate docs for module {module_name}: {e}")
 
                 # Log skipped modules
                 skipped = len(project_structure['modules']) - len(modules_to_process)
                 if skipped > 0:
-                    logger.info(f"Skipped {skipped} unchanged modules (using cache)")
+                    logger.info(f"⏭️  Skipped {skipped} unchanged modules (using cache)")
 
                 with self.files_lock:
                     self.generated_files.extend(mid_level_files)
-                logger.info(f"✓ Generated {len(mid_level_files)} module documentation files")
+                logger.info(f"✅ Generated {len(mid_level_files)} module documentation files")
 
             # Generate Detailed API Documentation
             if self.config.generate_detailed_level:
@@ -288,6 +308,13 @@ class LLMAutoDocPlugin(BasePlugin[LLMAutoDocPluginConfig]):
 
                 files_to_document = changed_files if not self.config.force_regenerate else project_structure['all_files']
                 detailed_files = []
+
+                total_api_files = len(files_to_document)
+                logger.info(f"📄 Processing {total_api_files} API documentation files...")
+
+                processed_count = 0
+                success_count = 0
+                error_count = 0
 
                 # Helper function for parallel processing
                 def process_file(file_path):
@@ -316,7 +343,7 @@ class LLMAutoDocPlugin(BasePlugin[LLMAutoDocPluginConfig]):
 
                 # Use ThreadPoolExecutor for parallel processing with tqdm
                 max_workers = self.config.max_concurrent_llm_calls
-                logger.info(f"Processing {len(files_to_document)} files with {max_workers} parallel workers")
+                logger.info(f"🔧 Using {max_workers} parallel workers for API documentation")
 
                 with ThreadPoolExecutor(max_workers=max_workers) as executor:
                     # Submit all tasks
@@ -329,6 +356,8 @@ class LLMAutoDocPlugin(BasePlugin[LLMAutoDocPluginConfig]):
                             file_path = futures[future]
                             try:
                                 files, error, processed_path = future.result()
+                                processed_count += 1
+
                                 if files:
                                     detailed_files.extend(files)
                                     # Immediately add to generated_files so they can be picked up
@@ -336,14 +365,23 @@ class LLMAutoDocPlugin(BasePlugin[LLMAutoDocPluginConfig]):
                                         self.generated_files.extend(files)
                                     # Mark file as successfully processed for cache update
                                     successfully_processed_files.append(processed_path)
+                                    success_count += 1
+
+                                    # Log progress every 10% or every 5 files (whichever is smaller)
+                                    log_interval = max(1, min(5, total_api_files // 10))
+                                    if processed_count % log_interval == 0 or processed_count == total_api_files:
+                                        logger.info(f"📄 Progress: {processed_count}/{total_api_files} files ({success_count} success, {error_count} errors)")
+
                                 if error:
-                                    logger.error(f"Failed to generate documentation for {processed_path}: {error}")
+                                    error_count += 1
+                                    logger.error(f"✗ Failed to generate documentation for {processed_path}: {error}")
                             except Exception as exc:
-                                logger.error(f"Exception processing {file_path}: {exc}")
+                                error_count += 1
+                                logger.error(f"✗ Exception processing {file_path}: {exc}")
                             finally:
                                 pbar.update(1)
 
-                logger.info(f"✓ Generated {len(detailed_files)} API documentation files")
+                logger.info(f"✅ Generated {len(detailed_files)} API documentation files ({success_count} success, {error_count} errors)")
 
             # Update cross-references
             if self.config.enable_cross_references:
@@ -353,20 +391,28 @@ class LLMAutoDocPlugin(BasePlugin[LLMAutoDocPluginConfig]):
 
             # Update cache - ONLY for successfully processed files
             # This prevents failed files from being marked as "processed" in the cache
+            unique_processed_files = []
             if successfully_processed_files:
                 # Remove duplicates while preserving order
                 unique_processed_files = list(dict.fromkeys(successfully_processed_files))
-                logger.info(f"Updating cache for {len(unique_processed_files)} successfully processed files")
+                logger.info(f"💾 Updating cache for {len(unique_processed_files)} successfully processed files")
                 self.cache_manager.update_cache(
                     str(project_path),
                     unique_processed_files
                 )
             else:
-                logger.info("No files were successfully processed - cache not updated")
+                logger.warning("⚠️  No files were successfully processed - cache not updated")
 
             with self.files_lock:
                 total_files = len(self.generated_files)
-            logger.info(f"✅ Documentation generation complete! Generated {total_files} files")
+
+            # Final summary
+            logger.info("=" * 70)
+            logger.info(f"✅ DOCUMENTATION GENERATION COMPLETE!")
+            logger.info(f"   Total documentation files generated: {total_files}")
+            logger.info(f"   Successfully processed source files: {len(unique_processed_files)}")
+            logger.info(f"   Cache updated: {'Yes' if unique_processed_files else 'No'}")
+            logger.info("=" * 70)
 
         except Exception as e:
             logger.error(f"Error during documentation generation: {e}", exc_info=True)
