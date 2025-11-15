@@ -45,17 +45,37 @@ cd mkdocs
 pip install -r requirements.txt
 ```
 
-### 3. MkDocs starten
+### 3. Server starten
+
+**Option A: Automatischer Start (empfohlen)**
+
+Beide Server (Build Control + MkDocs) mit einem Befehl starten:
+
+**Windows:**
+```bash
+start.bat
+```
+
+**Linux/macOS:**
+```bash
+./start.sh
+```
+
+Die Startskripte starten automatisch:
+- Build Control Server (Port 8001)
+- MkDocs Server mit Live Edit (Port 8005)
+
+**Option B: Manueller Start**
 
 Für **Live Edit Funktionalität** (erforderlich für Browser-Bearbeitung):
 
 ```bash
-mkdocs serve -a 0.0.0.0:8000
+mkdocs serve -a 0.0.0.0:8005
 ```
 
-Die Dokumentation ist dann verfügbar unter: http://127.0.0.1:8000
+Die Dokumentation ist dann verfügbar unter: http://127.0.0.1:8005
 
-**Hinweis**: Das `-a 0.0.0.0:8000` Flag ist notwendig, damit das Live Edit Plugin korrekt funktioniert.
+**Hinweis**: Das `-a 0.0.0.0:8005` Flag ist notwendig, damit das Live Edit Plugin korrekt funktioniert.
 
 ## Projekt-Struktur
 
@@ -262,10 +282,15 @@ Das **mkdocs-live-edit-plugin** ermöglicht es, Markdown-Seiten direkt im Browse
 
 ### Verwendung
 
+**Mit Start-Skripten (empfohlen):**
+- Live Edit ist automatisch aktiviert nach `start.bat` / `./start.sh`
+
+**Manuell:**
+
 1. **MkDocs mit korrektem Host starten**:
 
 ```bash
-mkdocs serve -a 0.0.0.0:8000
+mkdocs serve -a 0.0.0.0:8005
 ```
 
 2. **Im Browser**: Navigiere zu einer Seite
@@ -294,14 +319,60 @@ plugins:
 ### Wichtige Hinweise
 
 - **WebSocket-Server**: Läuft auf Port 9001 (konfigurierbar)
-- **Bind-Adresse**: MkDocs muss mit `-a 0.0.0.0:8000` gestartet werden
+- **Bind-Adresse**: MkDocs muss mit `-a 0.0.0.0:8005` gestartet werden
 - **Python-Version**: Mindestens Python 3.10 erforderlich
+
+## Schnellstart mit Start-Skripten
+
+Das Projekt enthält praktische Start-Skripte, die alle Server automatisch starten:
+
+### Windows
+
+```bash
+start.bat
+```
+
+### Linux/macOS
+
+```bash
+chmod +x start.sh  # Einmalig: Ausführungsrechte setzen
+./start.sh
+```
+
+### Was machen die Skripte?
+
+Die Start-Skripte starten automatisch:
+
+1. **Build Control Server** (Port 8001)
+   - Ermöglicht Build-Pause vom Browser aus
+   - Steuert `.mkdocs-build-paused` Flag
+
+2. **MkDocs Server** (Port 8005)
+   - Mit Live Edit Support (WebSocket Port 9001)
+   - Automatisches Live-Reload bei Änderungen
+
+### Features nach dem Start
+
+- 🌐 **Dokumentation**: http://127.0.0.1:8005
+- 🎛️ **Build Control**: http://localhost:8001
+- ✏️ **Live Edit**: Direkt im Browser bearbeiten
+- 🔨 **Build Toggle**: Klicke auf den Button oben rechts
+- ⚡ **Auto-Reload**: Änderungen werden sofort sichtbar
+
+### Server beenden
+
+- **Windows**: `Ctrl+C` im Terminal drücken
+- **Linux/macOS**: `Ctrl+C` im Terminal drücken
+
+Die Skripte beenden automatisch beide Server sauber.
 
 ## Build Control Hook
 
 Das Projekt enthält ein Build Control System, das es ermöglicht, den HTML-Build vom Browser aus zu pausieren, während die LLM-Dokumentations-Generierung im Hintergrund weiterläuft.
 
-### Verwendung
+### Manuelle Verwendung
+
+Falls Sie die Server einzeln starten möchten:
 
 1. **Control Server starten** (in einem separaten Terminal):
 
@@ -314,7 +385,7 @@ Der Server läuft auf http://localhost:8001
 2. **MkDocs starten**:
 
 ```bash
-mkdocs serve
+mkdocs serve -a 0.0.0.0:8005
 ```
 
 3. **Im Browser**: Klicke auf den Build-Toggle-Button (🔨) oben rechts
@@ -354,8 +425,12 @@ Die Suche funktioniert nur im `serve` oder `build` Modus.
 ## Nützliche Befehle
 
 ```bash
+# Alle Server starten (empfohlen)
+start.bat       # Windows
+./start.sh      # Linux/macOS
+
 # Entwicklungsserver starten (mit Live Edit Support)
-mkdocs serve -a 0.0.0.0:8000
+mkdocs serve -a 0.0.0.0:8005
 
 # Entwicklungsserver starten (Standard, ohne Live Edit)
 mkdocs serve
